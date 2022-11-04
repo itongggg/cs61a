@@ -118,6 +118,7 @@ def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
     who = 0  # Who is about to take a turn, 0 (first) or 1 (second)
     last0 = 0
     last1 = 0
+    cnt = 0
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
     while score0 < goal and score1 < goal:
@@ -136,6 +137,11 @@ def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
                 tmp = score0
                 score0 = score1
                 score1 = tmp
+            if cnt == 0:
+                comment0 = say(score0, score1)
+                cnt += 1
+            else:
+                comment0 = comment1(score0, score1)
             who = other(who)
             if score1 >= goal or score0 >= goal:
                 break
@@ -155,6 +161,7 @@ def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
                 tmp = score0
                 score0 = score1
                 score1 = tmp
+            comment1 = comment0(score0, score1)
             who = other(who)
             if score1 >= goal or score0 >= goal:
                 break
@@ -248,6 +255,18 @@ def announce_highest(who, last_score=0, running_high=0):
     assert who == 0 or who == 1, 'The who argument should indicate a player.'
     # BEGIN PROBLEM 7
     "*** YOUR CODE HERE ***"
+   
+    def say(score0, score1):
+        socre_for_whom = score0 if who == 0 else score1
+        gain = socre_for_whom - last_score
+        if gain > running_high:
+            print(f"{gain} point(s)!", f"That's the biggest gain yet for Player {who}")
+            return announce_highest(who, socre_for_whom, gain)
+        return announce_highest(who, socre_for_whom, running_high)
+    return say
+    
+
+     
     # END PROBLEM 7
 
 
@@ -287,6 +306,12 @@ def make_averaged(original_function, trials_count=1000):
     """
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    def average_f(*args):
+        result = 0
+        for i in range(trials_count):
+            result += original_function(*args)
+        return result / trials_count
+    return average_f
     # END PROBLEM 8
 
 
@@ -301,6 +326,15 @@ def max_scoring_num_rolls(dice=six_sided, trials_count=1000):
     """
     # BEGIN PROBLEM 9
     "*** YOUR CODE HERE ***"
+    max = 0
+    nums = 0
+    for i in range(1, 11):
+        f = make_averaged(roll_dice, trials_count=1000)
+        result = f(i, dice)
+        if max < result:
+            max = result
+            nums = i
+    return nums
     # END PROBLEM 9
 
 
@@ -350,7 +384,10 @@ def bacon_strategy(score, opponent_score, cutoff=8, num_rolls=6):
     rolls NUM_ROLLS otherwise.
     """
     # BEGIN PROBLEM 10
-    return 6  # Replace this statement
+    bacon = free_bacon(opponent_score)
+    return 0 if bacon >= cutoff else num_rolls
+
+    # return 6  # Replace this statement
     # END PROBLEM 10
 
 
@@ -359,8 +396,25 @@ def swap_strategy(score, opponent_score, cutoff=8, num_rolls=6):
     rolls 0 dice if it gives at least CUTOFF points and does not trigger a
     non-beneficial swap. Otherwise, it rolls NUM_ROLLS.
     """
+    # maybe something wrong with the test
     # BEGIN PROBLEM 11
-    return 6  # Replace this statement
+    """newscore = score + free_bacon(opponent_score)
+    if is_swap(newscore, opponent_score) and opponent_score > newscore:
+        return 0
+    else:
+        return bacon_strategy(score, opponent_score, cutoff, num_rolls)
+    """
+    score_roll_zero = free_bacon(opponent_score)
+    tmp_score = score_roll_zero + score
+    if is_swap(tmp_score, opponent_score):
+        if opponent_score > tmp_score:
+            return 0
+        elif opponent_score < tmp_score:
+            return num_rolls
+    if score_roll_zero >= cutoff:
+        return 0
+    return num_rolls
+    # return 6  # Replace this statement
     # END PROBLEM 11
 
 
